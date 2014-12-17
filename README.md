@@ -9,9 +9,13 @@ analyzing RNA-Seq data with the RSubread aligner and the ASSIGN package.
 To run the software, make sure you have installed the following R packages:
 
 [Rsubread](http://www.bioconductor.org/packages/release/bioc/html/Rsubread.html)
+
 [limma](http://www.bioconductor.org/packages/release/bioc/html/limma.html)
+
 [edgeR](http://www.bioconductor.org/packages/release/bioc/html/edgeR.html)
+
 [ASSIGN](http://www.bioconductor.org/packages/release/bioc/html/ASSIGN.html)
+
 [sva](http://www.bioconductor.org/packages/release/bioc/html/sva.html)
 
 ### 1) Create RPKM Values using RSubread
