@@ -8,13 +8,11 @@ analyzing RNA-Seq data with the RSubread aligner and the ASSIGN package.
 
 To run the software, make sure you have installed the following R packages:
 
-```
 [Rsubread](http://www.bioconductor.org/packages/release/bioc/html/Rsubread.html)
 [limma](http://www.bioconductor.org/packages/release/bioc/html/limma.html)
 [edgeR](http://www.bioconductor.org/packages/release/bioc/html/edgeR.html)
 [ASSIGN](http://www.bioconductor.org/packages/release/bioc/html/ASSIGN.html)
 [sva](http://www.bioconductor.org/packages/release/bioc/html/sva.html)
-```
 
 ### 1) Create RPKM Values using RSubread
 
@@ -39,12 +37,12 @@ Rscript ProcessRnaSeqFeatureCounts.R <ref_index_prefix> <reads_1.fq.gz> \
 
 | Input              | Description |
 |--------------------|-------------|
-| <ref_index_prefix> | Creating the RSubread reference will create several files with the same prefix. Provide the path to the prefix of these files | 
-| <reads_1.fq.gz>    | Input fastq.gz file |
-| <reads_2.fq.gz>    | If the reads are paired end, provide the path the second read file, otherwise put 'NULL' |
-| <annotations.gtf>  | Path to gene annotations in [GTF](http://www.ensembl.org/info/website/upload/gff.html) format |
-| <out_prefix>       | The script will create several output files, provide a prefix where these files will be created |
-| <threads>          | Number of threads to use while aligning the data |
+| \<ref_index_prefix\> | Creating the RSubread reference will create several files with the same prefix. Provide the path to the prefix of these files | 
+| \<reads_1.fq.gz\>    | Input fastq.gz file |
+| \<reads_2.fq.gz\>    | If the reads are paired end, provide the path the second read file, otherwise put 'NULL' |
+| \<annotations.gtf\>  | Path to gene annotations in [GTF](http://www.ensembl.org/info/website/upload/gff.html) format |
+| \<out_prefix\>       | The script will create several output files, provide a prefix where these files will be created |
+| \<threads\>          | Number of threads to use while aligning the data |
 
 ### 2) Create a matrix of RPKM values
 
