@@ -22,12 +22,16 @@ nthreads = command_args[6]
 input_format = "gzFASTQ"
 if (file_ext(inFilePath1) == "bam")
   input_format = "BAM"
+if (file_ext(inFilePath1) %in% c("fastq","fq"))
+  input_format = "FASTQ"
 
 #Prep output files
 outBamFilePath = paste(outFilePrefix, "bam", sep=".")
 outCountsFilePath = paste(outFilePrefix, "featureCounts", sep=".")
-outRpkmFilePath = paste(outFilePrefix, "rpkm", sep=".")
-outRpkmLogFilePath = paste(outFilePrefix, "rpkmlog", sep=".")
+outFpkmFilePath = paste(outFilePrefix, "fpkm", sep=".")
+outFpkmLogFilePath = paste(outFilePrefix, "fpkmlog", sep=".")
+outTpmFilePath = paste(outFilePrefix, "tpm", sep=".")
+outTpmLogFilePath = paste(outFilePrefix, "tpmlog", sep=".")
 outStatsFilePath = paste(outFilePrefix, "stats", sep=".")
 
 #2nd file null if only fragment data
@@ -38,10 +42,11 @@ if (inFilePath2 == "NULL")
 if (!file.exists(outBamFilePath))
   align(index=referenceGenomeFastaFilePath, readfile1=inFilePath1, readfile2=inFilePath2, output_file=outBamFilePath, nthreads=nthreads, input_format=input_format, tieBreakHamming=TRUE, unique=TRUE, indels=5)
 
-#Create rpkm list
+#Create fpkm list
 fCountsList = featureCounts(outBamFilePath, annot.ext=gtfFilePath, isGTFAnnotationFile=TRUE, nthreads=nthreads, isPairedEnd=!is.null(inFilePath2))
 dgeList = DGEList(counts=fCountsList$counts, genes=fCountsList$annotation)
-rpkm = rpkm(dgeList, dgeList$genes$Length)
+fpkm = rpkm(dgeList, dgeList$genes$Length)
+tpm = (fpkm / sum(fpkm)) * 10^6
 
 #Write out stats
 write.table(fCountsList$stat, outStatsFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
@@ -50,9 +55,11 @@ write.table(fCountsList$stat, outStatsFilePath, sep="\t", col.names=FALSE, row.n
 featureCounts = cbind(fCountsList$annotation[,1], fCountsList$counts)
 write.table(featureCounts, outCountsFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
-#Write out rpkm file and rpkmlog file
-write.table(cbind(fCountsList$annotation[,1], rpkm), outRpkmFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
-write.table(cbind(fCountsList$annotation[,1], log2(rpkm + 1)), outRpkmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+#Write out fpkm, tpm, fpkmlog, and tpmlog file
+write.table(cbind(fCountsList$annotation[,1], fpkm), outFpkmFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+write.table(cbind(fCountsList$annotation[,1], log2(fpkm + 1)), outFpkmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+write.table(cbind(fCountsList$annotation[,1], tpm), outTpmFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+write.table(cbind(fCountsList$annotation[,1], log2(tpm + 1)), outTpmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
 #Delete bam file and indel file
 unlink(outBamFilePath)
