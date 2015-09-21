@@ -1,32 +1,35 @@
 library(devtools)
+
 gatherFile<-function(baseDir){
-    ###gathers all the prediction from baseDir/*/*/pathway_activity_testset* format
+  ###gathers all the prediction from baseDir/*/*/pathway_activity_testset* format
   setwd(baseDir)
   filenames<-system("ls */*/pathway_activity_testset*", intern=TRUE)
   filenames
   data=NULL
-  for(i in 1:length(filenames))
-     {
-        f<-read.csv(filenames[i], header=1,row.names=1) ###reading in the filess one at a time
-        colnames(f)<-paste(filenames[i],colnames(f),sep='/')
-        if(i==1){
-                data<-f
-       }
-       else{
-                data<-cbind(data,f)
-      }
+  for(i in 1:length(filenames)){
+    ###reading in the filess one at a time
+    f<-read.csv(filenames[i], header=1,row.names=1)
+    colnames(f)<-paste(filenames[i],colnames(f),sep='/')
+    if(i==1){
+      data<-f
     }
+    else{
+      data<-cbind(data,f)
+    }
+  }
   return(data)
 }
+
 resistant_or_sensitive=function(value,cutoff){
   if(value>cutoff){
-  status='S'
+    status='S'
   }
   else{
-  status='R'
+    status='R'
   }
   return (status)
 }
+
 short_to_long_TCGA_id=function(longnames=NULL,shortnames=NULL){
   counter=0
   for (j in 1:length(shortnames)){
@@ -39,76 +42,73 @@ short_to_long_TCGA_id=function(longnames=NULL,shortnames=NULL){
   return(shortnames)
 }
 
-merge_drop<-function(x,y,by=0,...)
-{
+merge_drop<-function(x,y,by=0,...){
   new_m<-merge(x,y,by=by,...)
   rownames(new_m)<-new_m$Row.names
   return(new_m[,2:length(colnames(new_m))])
 }
 
 pcaplot<-function(mat,sub,center=T,scale=T){
-  if(sum(sub)!=length(mat))
-    {
+  if(sum(sub)!=length(mat)){
     print("verify the subscripts...exiting now")
-    }
+  }
   else{
     pca_mat <- prcomp(t(mat), center=center,scale=scale)
     plot(pca_mat)
     plot(pca_mat$x[,1],pca_mat$x[,2])
     abline(h=0,v=0)
-    for(i in length(sub):1)
-      {
+    for(i in length(sub):1){
       print(i)
-      if(i!=1)
-        {
-          points(pca_mat$x[sum(sub[1:i-1]):sum(sub[1:i])],pca_mat$x[sum(sub[1:i-1]):sum(sub[1:i]),2],col=i,pch=i)
-        }
-      else #if(i==1)
-        {
-        points(pca_mat$x[1:sub[i]],pca_mat$x[1:sub[i],2],col=i,pch=i)
-        }
+      if(i!=1){
+        points(pca_mat$x[sum(sub[1:i-1]):sum(sub[1:i])],pca_mat$x[sum(sub[1:i-1]):sum(sub[1:i]),2],col=i,pch=i)
       }
+      else{
+        points(pca_mat$x[1:sub[i]],pca_mat$x[1:sub[i],2],col=i,pch=i)
+      }
+    }
   }
 }
-
 
 assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NULL,g=100,out_dir_base="~/Desktop/tmp",cov=0, geneList=NULL,single=0){
-if(cov==0 & single==0){
-  adapB_folder<-paste(out_dir_base,paste( "adapB_multi",sep=''),sep='/')
-  dir.create(file.path(out_dir_base,paste( "adapB_multi",sep='')))
-  adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_multi",sep=''),sep='/')
-  dir.create(file.path(out_dir_base,paste( "adap_adap_multi",sep='')))
+  if(cov==0 & single==0){
+    adapB_folder<-paste(out_dir_base,paste( "adapB_multi",sep=''),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adapB_multi",sep='')))
+    adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_multi",sep=''),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adap_adap_multi",sep='')))
+  }
+  else if (cov==0 & single==1){
+    adapB_folder<-paste(out_dir_base,paste( "adapB_single",sep=''),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adapB_single",sep='')))
+    adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_single",sep=''),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adap_adap_single",sep='')))
   }
 
-else if (cov==0 & single==1){
-  adapB_folder<-paste(out_dir_base,paste( "adapB_single",sep=''),sep='/')
-  dir.create(file.path(out_dir_base,paste( "adapB_single",sep='')))
-  adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_single",sep=''),sep='/')
-  dir.create(file.path(out_dir_base,paste( "adap_adap_single",sep='')))
+  if(is.null(geneList)){
+    set.seed(1234)
+    assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
+                   geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F,
+                   outputDir=adapB_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
+
+    set.seed(1234)
+    assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
+                   geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F,
+                   outputDir=adap_adap_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
   }
+  else{
+    set.seed(1234)
+    assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
+                   geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F,
+                   outputDir=adapB_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
 
-
-if(is.null(geneList)){
-  set.seed(1234)
-  assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1, geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F, outputDir=adapB_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)  
-
-  set.seed(1234)
-  assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1, geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F, outputDir=adap_adap_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000) 
+    set.seed(1234)
+    assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
+                   geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F,
+                   outputDir=adap_adap_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
+  }
 }
-else{
-  set.seed(1234)
-  assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1, geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F, outputDir=adapB_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)  
 
-  set.seed(1234)
-  assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1, geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F, outputDir=adap_adap_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000) 
-
-
-}
-}
-testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testData, trainingLabels)
-{
+testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testData, trainingLabels){
   names(sigProtein)=names(geneList)=strsplit(sigProtein,"_")[[1]][1]
-
   trainingLabel<-list(control=list(sigProtein=1:trainingLabels[1]),sigProtein=(trainingLabels[1]+1):(trainingLabels[1]+trainingLabels[2]))
   names(trainingLabel$control)=names(trainingLabel)[2]=names(sigProtein)
   if(is.na(numGenes)){
@@ -118,50 +118,25 @@ testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testD
     sub_dir<-paste(basedir,paste(sigProtein,numGenes,"gene_list", sep="_"),sep='/')
   }
   dir.create(sub_dir)
-  assign_easy_multi(trainingData = trainingData,test=testData,trainingLabel1 = trainingLabel,g=numGenes,geneList = geneList,out_dir_base = sub_dir,single = 1)
+  assign_easy_multi(trainingData = trainingData,test=testData,trainingLabel1 = trainingLabel,
+                    g=numGenes,geneList = geneList,out_dir_base = sub_dir,single = 1)
 }
 
-
-getGeneList = function(rDataPath) {
-load(rDataPath)
-output.data$processed.data$diffGeneList####for a gene list
-output.data$processed.data$S_matrix##signature matrix with coefficients
+getGeneList = function(rDataPath){
+  load(rDataPath)
+  #for a gene list
+  output.data$processed.data$diffGeneList
+  #signature matrix with coefficients
+  output.data$processed.data$S_matrix
 }
 
-
-writeFile = function(variable, filename) {
-write.table(variable, filename ,sep='\t', col.names = NA,quote=F)
+writeFile = function(variable, filename){
+  write.table(variable, filename ,sep='\t', col.names = NA,quote=F)
 }
 
-testSig_multi <- function(sigProteins, numGenes=NA,geneList =NULL, trainingData, testData, trainingLabel)
-{
-      sub_dir<-paste(basedir,paste(sigProteins,"gene_list", sep="_"),sep='/')
-      dir.create(sub_dir)
-      assign_easy_multi(trainingData = trainingData,test=testData,trainingLabel1 = trainingLabel,g=numGenes,geneList = geneList,out_dir_base = sub_dir)
+testSig_multi <- function(sigProteins, numGenes=NA,geneList =NULL, trainingData, testData, trainingLabel){
+  sub_dir<-paste(basedir,paste(sigProteins,"gene_list", sep="_"),sep='/')
+  dir.create(sub_dir)
+  assign_easy_multi(trainingData = trainingData,test=testData,trainingLabel1 = trainingLabel,
+                    g=numGenes,geneList = geneList,out_dir_base = sub_dir)
 }
-
-
-
-#combineMultiplePredictionFiles= function(fileNames, outFileName=NA)
-#for(i in 1:length(fileNames))
-#  {
-#   f<-read.csv(filenames[i], header=1,row.names=1) ###reading in the filess one at a time
-#   colnames(f)<-paste(filenames[i],colnames(f),sep='/')
-#   if(i!=1){
-#     print(i)
-#     data_icbp<-cbind(data_icbp,f)
-#    }
-#   else{
-#     data_icbp<-f
-#     }
-##  }
-#  print(dim(data))  
-#  if(!is.na(outFileName)){
-#    write.table(data,outFileName ,sep='\t', col.names = NA,quote=F)
-#    }
-#  else{
-#    return(data)
-#  }
-#}
-
-#sum(!rownames(temp)%in%rownames(temp1))
