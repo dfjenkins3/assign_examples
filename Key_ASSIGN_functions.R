@@ -69,45 +69,45 @@ pcaplot<-function(mat,sub,center=T,scale=T){
   }
 }
 
-assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NULL,g=100,out_dir_base="~/Desktop/tmp",cov=0, geneList=NULL,single=0){
+assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NULL,g=100,out_dir_base="~/Desktop/tmp",cov=0, geneList=NULL,single=0, sigma_sZero = 0.01, sigma_sNonZero = 1, iter=100000, burn_in=50000){
   if(cov==0 & single==0){
-    adapB_folder<-paste(out_dir_base,paste( "adapB_multi",sep=''),sep='/')
-    dir.create(file.path(out_dir_base,paste( "adapB_multi",sep='')))
-    adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_multi",sep=''),sep='/')
-    dir.create(file.path(out_dir_base,paste( "adap_adap_multi",sep='')))
+    adapB_folder<-paste(out_dir_base,paste( "adapB_multi",sigma_sZero,sigma_sNonZero,sep='_'),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adapB_multi",sigma_sZero,sigma_sNonZero,sep='_')))
+    adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_multi",sigma_sZero,sigma_sNonZero,sep='_'),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adap_adap_multi",sigma_sZero,sigma_sNonZero,sep='_')))
   }
   else if (cov==0 & single==1){
-    adapB_folder<-paste(out_dir_base,paste( "adapB_single",sep=''),sep='/')
-    dir.create(file.path(out_dir_base,paste( "adapB_single",sep='')))
-    adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_single",sep=''),sep='/')
-    dir.create(file.path(out_dir_base,paste( "adap_adap_single",sep='')))
+    adapB_folder<-paste(out_dir_base,paste( "adapB_single",sigma_sZero,sigma_sNonZero,sep='_'),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adapB_single",sigma_sZero,sigma_sNonZero,sep='_')))
+    adap_adap_folder<-paste(out_dir_base,paste( "adap_adap_single",sigma_sZero,sigma_sNonZero,sep='_'),sep='/')
+    dir.create(file.path(out_dir_base,paste( "adap_adap_single",sigma_sZero,sigma_sNonZero,sep='_')))
   }
 
   if(is.null(geneList)){
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
                    geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F,
-                   outputDir=adapB_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
+                   outputDir=adapB_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
 
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
                    geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F,
-                   outputDir=adap_adap_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
+                   outputDir=adap_adap_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
   }
   else{
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
                    geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F,
-                   outputDir=adapB_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
+                   outputDir=adapB_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
 
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
                    geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F,
-                   outputDir=adap_adap_folder, theta0=0.05, theta1=0.9, iter=100000, burn_in=50000)
+                   outputDir=adap_adap_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
   }
 }
 
-testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testData, trainingLabels){
+testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testData, trainingLabels, sigma_sZero = 0.01, sigma_sNonZero = 1){
   names(sigProtein)=names(geneList)=strsplit(sigProtein,"_")[[1]][1]
   trainingLabel<-list(control=list(sigProtein=1:trainingLabels[1]),sigProtein=(trainingLabels[1]+1):(trainingLabels[1]+trainingLabels[2]))
   names(trainingLabel$control)=names(trainingLabel)[2]=names(sigProtein)
@@ -119,7 +119,8 @@ testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testD
   }
   dir.create(sub_dir)
   assign_easy_multi(trainingData = trainingData,test=testData,trainingLabel1 = trainingLabel,
-                    g=numGenes,geneList = geneList,out_dir_base = sub_dir,single = 1)
+                    g=numGenes,geneList = geneList,out_dir_base = sub_dir,single = 1,
+                    sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero)
 }
 
 getGeneList = function(rDataPath){
