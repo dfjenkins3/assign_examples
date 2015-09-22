@@ -69,7 +69,7 @@ pcaplot<-function(mat,sub,center=T,scale=T){
   }
 }
 
-assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NULL,g=100,out_dir_base="~/Desktop/tmp",cov=0, geneList=NULL,single=0, sigma_sZero = 0.01, sigma_sNonZero = 1, iter=100000, burn_in=50000){
+assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NULL,g=100,out_dir_base="~/Desktop/tmp",cov=0, geneList=NULL,single=0, sigma_sZero = 0.01, sigma_sNonZero = 1, iter=100000, burn_in=50000, S_zeroPrior = TRUE){
   if(cov==0 & single==0){
     adapB_folder<-paste(out_dir_base,paste( "adapB_multi",sigma_sZero,sigma_sNonZero,sep='_'),sep='/')
     dir.create(file.path(out_dir_base,paste( "adapB_multi",sigma_sZero,sigma_sNonZero,sep='_')))
@@ -86,23 +86,23 @@ assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NU
   if(is.null(geneList)){
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
-                   geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F,
+                   geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F, S_zeroPrior = S_zeroPrior,
                    outputDir=adapB_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
 
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
-                   geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F,
+                   geneList=NULL, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F, S_zeroPrior = S_zeroPrior,
                    outputDir=adap_adap_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
   }
   else{
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
-                   geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F,
+                   geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=F, mixture_beta=F, S_zeroPrior = S_zeroPrior,
                    outputDir=adapB_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
 
     set.seed(1234)
     assign.wrapper(trainingData=trainingData, testData=testData, trainingLabel=trainingLabel1,
-                   geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F,
+                   geneList=geneList, n_sigGene=g, adaptive_B=T, adaptive_S=T, mixture_beta=F, S_zeroPrior = S_zeroPrior,
                    outputDir=adap_adap_folder, sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, iter=iter, burn_in=burn_in)
   }
 }
