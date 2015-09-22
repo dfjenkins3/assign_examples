@@ -107,7 +107,7 @@ assign_easy_multi<-function(trainingData=train, testData=test, trainingLabel1=NU
   }
 }
 
-testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testData, trainingLabels, sigma_sZero = 0.01, sigma_sNonZero = 1){
+testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testData, trainingLabels, sigma_sZero = 0.01, sigma_sNonZero = 1, S_zeroPrior = TRUE){
   names(sigProtein)=names(geneList)=strsplit(sigProtein,"_")[[1]][1]
   trainingLabel<-list(control=list(sigProtein=1:trainingLabels[1]),sigProtein=(trainingLabels[1]+1):(trainingLabels[1]+trainingLabels[2]))
   names(trainingLabel$control)=names(trainingLabel)[2]=names(sigProtein)
@@ -120,7 +120,7 @@ testSig <- function(sigProtein, numGenes=NA, geneList =NULL, trainingData, testD
   dir.create(sub_dir)
   assign_easy_multi(trainingData = trainingData,test=testData,trainingLabel1 = trainingLabel,
                     g=numGenes,geneList = geneList,out_dir_base = sub_dir,single = 1,
-                    sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero)
+                    sigma_sZero = sigma_sZero, sigma_sNonZero = sigma_sNonZero, S_zeroPrior = S_zeroPrior)
 }
 
 getGeneList = function(rDataPath){
