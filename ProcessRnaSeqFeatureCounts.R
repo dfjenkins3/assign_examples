@@ -1,6 +1,7 @@
 library(Rsubread)
 library(limma)
 library(edgeR)
+library(methods)
 library(tools)
 options(digits=2)
 
@@ -40,7 +41,8 @@ if (inFilePath2 == "NULL")
 
 #Create bam file if it does not exist
 if (!file.exists(outBamFilePath))
-  align(index=referenceGenomeFastaFilePath, readfile1=inFilePath1, readfile2=inFilePath2, output_file=outBamFilePath, nthreads=nthreads, input_format=input_format, tieBreakHamming=TRUE, unique=TRUE, indels=5)
+  align(index=referenceGenomeFastaFilePath, readfile1=inFilePath1, readfile2=inFilePath2, output_file=outBamFilePath, nthreads=nthreads, input_format=input_format, unique=TRUE, indels=5)
+  #align(index=referenceGenomeFastaFilePath, readfile1=inFilePath1, readfile2=inFilePath2, output_file=outBamFilePath, nthreads=nthreads, input_format=input_format, tieBreakHamming=TRUE, unique=TRUE, indels=5)
 
 #Create fpkm list
 fCountsList = featureCounts(outBamFilePath, annot.ext=gtfFilePath, isGTFAnnotationFile=TRUE, nthreads=nthreads, isPairedEnd=!is.null(inFilePath2))
@@ -62,5 +64,5 @@ write.table(cbind(fCountsList$annotation[,1], tpm), outTpmFilePath, sep="\t", co
 write.table(cbind(fCountsList$annotation[,1], log2(tpm + 1)), outTpmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
 #Delete bam file and indel file
-unlink(outBamFilePath)
-unlink(paste(outBamFilePath, ".indel", sep=""))
+#unlink(outBamFilePath)
+#unlink(paste(outBamFilePath, ".indel", sep=""))

@@ -52,7 +52,7 @@ for(my $i = 0; $i <= $#rpkm; $i++){
     my $zero_count = 0;
     $zero_count = 100 if $rpkm[$i][0] eq '';
     for(my $j = 0; $j <= $#{$rpkm[0]} ; $j++){
-        $zero_count++ if ($j != 0 && $i != 0 && $rpkm[$i][$j] == 0);
+#        $zero_count++ if ($j != 0 && $i != 0 && $rpkm[$i][$j] == 0);
         $outline .= "$rpkm[$i][$j]\t";
     }
     chop($outline);
