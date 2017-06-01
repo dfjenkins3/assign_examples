@@ -48,7 +48,7 @@ if (!file.exists(outBamFilePath))
 fCountsList = featureCounts(outBamFilePath, annot.ext=gtfFilePath, isGTFAnnotationFile=TRUE, nthreads=nthreads, isPairedEnd=!is.null(inFilePath2))
 dgeList = DGEList(counts=fCountsList$counts, genes=fCountsList$annotation)
 fpkm = rpkm(dgeList, dgeList$genes$Length)
-tpm = (fpkm / sum(fpkm)) * 10^6
+tpm = apply(fpkm, 2, function(x) x/sum(x) * 1000000) 
 
 #Write out stats
 write.table(fCountsList$stat, outStatsFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
